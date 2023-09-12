@@ -1,0 +1,32 @@
+is_winner_of_race("BAHRAIN GP", "Max Verstappen").
+
+is_winner_of_race("BAHRAIN GP", "Dmitry Drobysh").
+
+is_second_in_race("BAHRAIN GP", "Max Verstappen").
+
+is_second_in_race("BAHRAIN GP", "Sergio Pérez").
+
+is_third_in_race("BAHRAIN GP", "Fernando Alonso").
+
+is_third_in_race("BAHRAIN GP", "Max Verstappen").
+
+
+is_race_winner_in_team("BAHRAIN GP", "Red Bull").
+
+is_race_second_in_team("BAHRAIN GP", "Red Bull").
+
+is_race_second_in_team("BAHRAIN GP", "Ferrari").
+
+is_race_third_in_team("BAHRAIN GP", "McLauren").
+
+is_race_third_in_team("BAHRAIN GP", "Ferrari").
+
+is_race_third_in_team("BAHRAIN GP", "Alpine").
+
+is_race_third_in_team("BAHRAIN GP", "Aston Martin").
+
+
+
+is_team_on_podium("BAHRAIN GP", "Red Bull").
+
+is_team_on_podium("BAHRAIN GP", "Alpine").
