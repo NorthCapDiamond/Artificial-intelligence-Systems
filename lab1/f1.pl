@@ -1,7 +1,7 @@
 :- discontiguous
 	racer/1, race/1, race_winner/2, race_second/2, race_third/2, 
-	racing_team/1, pair_of_racers/3, event/1, racer_in_team/2, 
-	event_race/3, not_finished/2.
+	racing_team/1, pair_of_racers/2, event/1, racer_in_team/2, 
+	event_race/2, not_finished/2.
 
 
 % rules 
@@ -44,7 +44,7 @@ racer_in_team("Max Verstappen", "Red Bull").
 racer("Sergio Pérez").
 racer_in_team("Sergio Pérez", "Red Bull").
 
-pair_of_racers("Red Bull", "Max Verstappen", "Sergio Pérez").
+pair_of_racers("Max Verstappen", "Sergio Pérez").
 
 
 
@@ -57,7 +57,7 @@ racer_in_team("Charles Leclerc", "Ferrari").
 racer("Carlos Sainz Jr.").
 racer_in_team("Carlos Sainz Jr.", "Ferrari").
 
-pair_of_racers("Ferrari", "Charles Leclerc", "Carlos Sainz Jr.").
+pair_of_racers("Charles Leclerc", "Carlos Sainz Jr.").
 
 
 
@@ -70,7 +70,7 @@ racer_in_team("George Russell", "Mercedes").
 racer("Lewis Hamilton").
 racer_in_team("Lewis Hamilton", "Mercedes").
 
-pair_of_racers("Mercedes", "George Russell", "Lewis Hamilton").
+pair_of_racers("George Russell", "Lewis Hamilton").
 
 
 
@@ -83,7 +83,7 @@ racer_in_team("Lando Norris", "McLaren").
 racer("Oscar Piastri").
 racer_in_team("Oscar Piastri", "McLaren").
 
-pair_of_racers("McLaren", "Lando Norris", "Oscar Piastri").
+pair_of_racers("Lando Norris", "Oscar Piastri").
 
 
 
@@ -96,7 +96,7 @@ racer_in_team("Fernando Alonso", "Aston Martin").
 racer("Lance Stroll").
 racer_in_team("Lance Stroll", "Aston Martin").
 
-pair_of_racers("Aston Martin", "Fernando Alonso", "Lance Stroll").
+pair_of_racers("Fernando Alonso", "Lance Stroll").
 
 
 
@@ -109,7 +109,7 @@ racer_in_team("Pierre Gasly", "Alpine").
 racer("Esteban Ocon").
 racer_in_team("Esteban Ocon", "Alpine").
 
-pair_of_racers("Alpine", "Pierre Gasly", "Esteban Ocon").
+pair_of_racers("Pierre Gasly", "Esteban Ocon").
 
 
 
@@ -122,7 +122,7 @@ racer_in_team("Zhou Guanyu", "Alfa Romeo").
 racer("Valtteri Bottas").
 racer_in_team("Valtteri Bottas", "Alfa Romeo").
 
-pair_of_racers("Alfa Romeo", "Zhou Guanyu", "Valtteri Bottas").
+pair_of_racers("Zhou Guanyu", "Valtteri Bottas").
 
 
 
@@ -135,7 +135,7 @@ racer_in_team("Liam Lawson", "AlphaTauri").
 racer("Yuki Tsunoda").
 racer_in_team("Yuki Tsunoda", "AlphaTauri").
 
-pair_of_racers("AlphaTauri", "Liam Lawson", "Yuki Tsunoda").
+pair_of_racers("Liam Lawson", "Yuki Tsunoda").
 
 
 
@@ -148,7 +148,7 @@ racer_in_team("Alex Albon", "Williams").
 racer("Logan Sargeant").
 racer_in_team("Logan Sargeant", "Williams").
 
-pair_of_racers("Williams", "Alex Albon", "Logan Sargeant").
+pair_of_racers("Alex Albon", "Logan Sargeant").
 
 
 
@@ -161,7 +161,7 @@ racer_in_team("Nico Hülkenberg", "Haas").
 racer("Kevin Magnussen").
 racer_in_team("Kevin Magnussen", "Haas").
 
-pair_of_racers("Haas", "Nico Hülkenberg", "Kevin Magnussen").
+pair_of_racers("Nico Hülkenberg", "Kevin Magnussen").
 
 % events: 
 
@@ -181,8 +181,8 @@ not_finished("BAHRAIN GP", "Esteban Ocon").
 not_finished("BAHRAIN GP", "Charles Leclerc").
 not_finished("BAHRAIN GP", "Oscar Piastri").
 
-event_race("BAHRAIN GP", "Esteban Ocon", "Electrical failure").
-event_race("BAHRAIN GP", "Charles Leclerc", "Mechanical failure").
+event_race("BAHRAIN GP", "Electrical failure").
+event_race("BAHRAIN GP", "Mechanical failure").
 
 
 
@@ -195,7 +195,7 @@ race_third("SAUDI ARABIAN GP", "Fernando Alonso").
 not_finished("SAUDI ARABIAN GP", "Alex Albon").
 not_finished("SAUDI ARABIAN GP", "Lance Stroll").
 
-event_race("SAUDI ARABIAN GP", "Alex Albon", "Mechanical failure").
+event_race("SAUDI ARABIAN GP", "Mechanical failure").
 
 
 
@@ -211,7 +211,10 @@ not_finished("AUSTRALIAN GP", "Charles Leclerc").
 not_finished("AUSTRALIAN GP", "Logan Sargeant").
 not_finished("AUSTRALIAN GP", "Kevin Magnussen").
 
-event_race("AUSTRALIAN GP", "Kevin Magnussen", "ERS failure").
+event_race("AUSTRALIAN GP", "ERS failure").
+
+
+
 
 
 
