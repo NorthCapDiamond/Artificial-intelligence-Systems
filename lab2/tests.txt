@@ -1,0 +1,79 @@
+% Rule0 Return All parameters
+Event
+
+Race
+
+Racer
+
+Racing_Team
+
+
+
+
+% Rule1 Show Racers From Team
+
+Be_In_Team value Red_Bull
+
+
+
+
+% Rule2 Return The Winner/Second/Third Of The Race
+Win_The_Race value BAHRAIN_GP
+
+Be_The_Second_In_Race value AUSTRALIAN_GP
+
+Be_The_Third_In_Race value SAUDI_ARABIAN_GP
+
+
+
+
+% Rule3 Return event that was in race
+Event_In_Race value BAHRAIN_GP
+
+
+
+
+% Rule4 Return Team Of A Winner/Second/Third
+inverse(Be_In_Team) some (Win_The_Race value BAHRAIN_GP)
+
+inverse(Be_In_Team) some (Be_The_Second_In_Race value AUSTRALIAN_GP)
+
+inverse(Be_In_Team) some (Be_The_Third_In_Race value SAUDI_ARABIAN_GP)
+
+
+
+
+% Rule5 Return Teams on podium
+inverse(Be_In_Team) some (Be_On_Podium value AUSTRALIAN_GP)
+
+
+
+
+% Rule6 see the racers that DNF
+DNF value BAHRAIN_GP
+
+
+
+
+% Rule7 see teams, where one or both pilots DNF
+inverse(Be_In_Team) some (DNF value BAHRAIN_GP)
+
+
+
+
+% Rule8 See The Partner of a Racer
+Be_A_Partner value Max_Verstappen
+
+
+
+
+% Rule9 See team if both drivers are on podium
+((inverse (Be_In_Team) some (Win_The_Race value BAHRAIN_GP)) and (inverse (Be_In_Team) some (Be_The_Second_In_Race value BAHRAIN_GP))) or
+((inverse (Be_In_Team) some (Win_The_Race value BAHRAIN_GP)) and (inverse (Be_In_Team) some (Be_The_Third_In_Race value BAHRAIN_GP))) or
+((inverse (Be_In_Team) some (Be_The_Second_In_Race value BAHRAIN_GP)) and (inverse (Be_In_Team) some (Be_The_Second_In_Race value BAHRAIN_GP)))
+
+
+
+
+% Rule10 See team if one driver on podium and another one DNF
+((inverse (Be_In_Team) some (Be_On_Podium value SAUDI_ARABIAN_GP)) and (inverse (Be_In_Team) some (DNF value SAUDI_ARABIAN_GP)))
