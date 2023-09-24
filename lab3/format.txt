@@ -1,0 +1,19 @@
+// info param + 
+
+// show racers from team param +
+
+// i like to see the team that dnf  +
+
+// i like to see the racer that dnf +
+
+// i hate to see the team that dnf  +
+
+// i hate to see the racer that dnf +
+
+// i like to see the winner of param +
+
+// i hate to see the winner of param +
+
+// i like param racers 
+
+// i hate param racers 
