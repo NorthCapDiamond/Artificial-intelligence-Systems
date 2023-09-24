@@ -3,4 +3,4 @@ def merge_underlined(array):
 		return array[0]
 	else:
 		answer = "_".join(array)
-		return answer[0]
+		return answer
