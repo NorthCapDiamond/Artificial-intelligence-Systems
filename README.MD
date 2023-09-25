@@ -131,6 +131,8 @@ is_race_third_in_team("BAHRAIN GP", "Aston Martin").
 is_team_on_podium("BAHRAIN GP", "Red Bull").
 
 is_team_on_podium("BAHRAIN GP", "Alpine").
+
+
 protege: 
 
 
