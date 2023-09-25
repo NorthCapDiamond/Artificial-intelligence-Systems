@@ -4,7 +4,7 @@
 
 ### Описание целей проекта и его значимости.
 
-Целью моего проекта стала разработка системы поддержки принятия решения на основе запросов F1 на основе онтологии, разработанной в [лабораторной работе 2](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/lab2). Последняя, в свою очередь, строилась на основе базы знаний из [лабораторной работы 1](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/lab1).
+Целью моего проекта стала разработка системы поддержки принятия решения на основе запросов F1 на основе онтологии, разработанной в [лабораторной работе 2](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/tree/main/lab2). Последняя, в свою очередь, строилась на основе базы знаний из [лабораторной работы 1](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/tree/main/lab1).
 
 ## Анализ требований:
 
@@ -75,10 +75,10 @@
 - Экспертные системы
 - Робототехника
 
-Реализация же мой системы доступна [lab3](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems).
+Реализация же мой системы доступна [lab3](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/tree/main/lab3).
 
 
-Примеры запросов в БЗ и онтологию продемонстрированы в соответствующих отчетах к [лабораторной №1](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/lab1) и [лабораторной №2](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/lab2).
+Примеры запросов в БЗ и онтологию продемонстрированы в соответствующих отчетах к [лабораторной №1](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/tree/main/lab1) и [лабораторной №2](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/tree/main/lab2).
 
 Сравним их:
 
