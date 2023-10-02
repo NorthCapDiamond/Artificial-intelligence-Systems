@@ -54,6 +54,19 @@ def lab_solver(data_frame, v=1, PCA_flag=True):
 	print(df)
 	print("=======================================")
 
+
+	# Построение отдельных boxplot для каждой колонки
+	plt.figure(figsize=(15, 15))
+
+	for i, column in enumerate(df.columns):
+	    plt.subplot(3, 3, i + 1)
+	    df[column].plot(kind='box', vert=False)
+	    plt.title(f'Boxplot для {column}')
+
+	plt.tight_layout()
+	plt.show()
+	
+
 	if (v==1 and PCA_flag):
 		print("Now, I'm gonna check if there are correlated features:\n")
 		sns.heatmap(df.corr(), annot=True)
@@ -85,6 +98,38 @@ def lab_solver(data_frame, v=1, PCA_flag=True):
 		sns.heatmap(df.corr(), annot=True)
 		plt.show()
 
+	if (v==2 and PCA_flag):
+		print("Now, I'm gonna check if there are correlated features:\n")
+		sns.heatmap(df.corr(), annot=True)
+		plt.show()
+		"""
+		# I see 2 most correlated features: "households", "total_bedrooms"
+		correlated_features = ["households", "total_bedrooms", "total_rooms"]
+		print("Correlated features are:", ", ".join(correlated_features))
+		print("=======================================")
+
+		#We need to use PCA for this:
+
+		#Lets prepare the data:
+		mergred_features = df[correlated_features]
+		target_for_pca = Y["median_house_value"]
+
+		#delete features from df
+
+		df = df.drop(correlated_features, axis=1)
+		print("=======================================")
+		# using PCA:
+		pca_applied = PCA(mergred_features, n_components=1)
+
+		#Now we wanna recreate df:
+		temporary_df = pd.DataFrame(pca_applied, columns=['hosts'])
+		print(temporary_df)
+		df = pd.concat([df, temporary_df], axis=1)
+		print(df)
+
+		sns.heatmap(df.corr(), annot=True)
+		plt.show()
+		"""
 
 
 	X_train, X_test, y_train, y_test = train_test_split(df, Y)
@@ -119,4 +164,4 @@ def lab_solver(data_frame, v=1, PCA_flag=True):
 
 df = pd.read_csv("california_housing_train.csv")
 #df = pd.read_csv("Student_Performance.csv")
-lab_solver(df)
+lab_solver(df, v=1)
