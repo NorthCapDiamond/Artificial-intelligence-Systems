@@ -94,36 +94,6 @@ def my_f1_score(y_test, pred):
 	return TP/(TP + (1/(len(classes))) * (FP + FN))
 
 
-def my_confusion_matrix(y_test, pred):
-	#Classes = [TP, FP, TN, FN]
-	y_test = np.array(y_test).flatten()
-	pred = np.array(pred)
-	TP = 0
-	FP = 0
-	TN = 0
-	FN = 0
-
-
-	classes = list(set(y_test.tolist()))
-	classes_stats = [[0, 0, 0, 0]]*len(classes)
-	for i, cur_class in enumerate(classes):
-		for idx, (el1, el2) in enumerate(zip(y_test, pred)):
-			if (el1==el2==cur_class):
-				TP+=1
-				classes_stats[i][0]+=1
-			if (el2==cur_class and el1!=el2):
-				FP+=1
-				classes_stats[i][1]+=1
-			if (el1==el2 and el1!=cur_class):
-				classes_stats[i][2]+=1
-				TN+=1
-			if (el1!=el2 and el1!=cur_class):
-				classes_stats[i][3]+=1
-				FN+=1
-
-	return classes_stats
-
-
 def kfold_knn(X, Y, label, n_val, k_val):
 	df = pd.concat([X.copy(),Y.copy()], axis=1)
 	df = df.rename(columns={label: "Label"}) 
@@ -183,3 +153,23 @@ def kfold_knn(X, Y, label, n_val, k_val):
 	print("Best n", best_n)
 	print("Best k", best_k)
 	return [best_n, best_k]
+
+
+def my_confusion_matrix(y_test, pred):
+	#Classes = [TP, FP, TN, FN]
+	y_test = np.array(y_test).flatten()
+	pred = np.array(pred)
+	TP = 0
+	FP = 0
+	TN = 0
+	FN = 0 	
+
+	classes = list(set(y_test.tolist()))
+	num_classes = len(classes)
+	confusion_matrix = np.zeros((num_classes, num_classes))
+	for true_label, predicted_label in zip(y_test, pred):
+		true_label_index = classes.index(true_label)
+		predicted_label_index = classes.index(predicted_label)
+		confusion_matrix[true_label_index][predicted_label_index] += 1
+
+	return confusion_matrix
