@@ -58,8 +58,9 @@ def lab_solver(data_frame):
 	pred = KNeighborsClassifier().fit(X_train, y_train.values.ravel()).predict(X_test)
 	end = time.time()
 	print("Sklearn")
-	print("Time:", end-start)
 	print("F1 score:", f1_score(y_test, pred, average="micro"))
+	print(confusion_matrix(y_test, pred))
+	print("Time:", end-start)
 
 	print("=======================================")
 
