@@ -104,7 +104,7 @@ def kfold_knn(X, Y, label, n_val, k_val):
 	size_of_fold = X.shape[0]//10
 	folds = []
 	tmp = 0
-	for i in range(4):
+	for i in range(10):
 		folds.append(pd.DataFrame(df.iloc[tmp:(tmp+size_of_fold)]))
 		tmp += size_of_fold
 
