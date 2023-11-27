@@ -479,7 +479,7 @@ almost everywhere.. but it is too slow
 
 Дерево решений — метод представления решающих правил в определенной иерархии, включающей в себя элементы двух типов — узлов (node) и листьев (leaf). Узлы включают в себя решающие правила и производят проверку примеров на соответствие выбранного атрибута обучающего множества.Oct 12, 2020
 
-### Псевдокод метода
+### Код метода
 
 ```css
 import numpy as np
@@ -487,119 +487,112 @@ from collections import Counter
 
 
 class Node:
-    def __init__(self, feature=None, threshold=None, left=None, right=None, value=None):
+    def __init__(self, feature=None, children=None, value=None, typenode=None, threshold=None):
         self.feature = feature
         self.threshold = threshold
-        self.left = left
-        self.right = right
+        self.children = children
         self.value = value
+        self.typenode = typenode
 
-    def check_leaf_node(self):
-        return self.value is not None
+    def set_leaf(self):
+        self.typenode = "leaf"
 
-    def check_not_leaf_node(self):
-        return self.value is None
-
-    def set_feature(self, feature):
-        self.feature = feature
-
-    def set_threshold(self, threshold):
-        self.threshold = threshold
-
-    def set_left_node(self, left_ptr):
-        self.left = left_ptr
-
-    def set_right_node(self, right_ptr):
-        self.right = right_ptr
-
-    def set_value(self, value):
-        self.value = value
+    def is_leaf(self):
+        return self.typenode == "leaf"
 
 
 class DecisionTree:
-    def __init__(self, min_samples_split=2, max_depth=100, n_features=None):
-        self.min_samples_split = min_samples_split
+    def __init__(self, max_depth=10, min_features_split=1, min_samples_split=10, n_features=None):
         self.max_depth = max_depth
+        self.min_features_split = min_features_split
+        self.min_samples_split = min_samples_split
         self.n_features = n_features
         self.root = None
 
-    def set_min_samples(self, min_samples_split):
-        self.min_samples_split = min_samples_split
+    def _create_path(self, X, y, current_depth=0):
+        n_samples, n_feats = X.shape
+        n_labels = len(np.unique(y))
 
-    def set_max_depth(self, max_depth):
-        self.max_depth = max_depth
+        # Checking for ending criteria:
+        if (n_samples < self.min_samples_split or current_depth >= self.max_depth or n_feats < self.min_features_split or n_labels == 1):
+            leaf_value = self._most_common_label(y)
+            return Node(value=leaf_value, typenode="leaf")
 
-    def set_n_features(self, n_features):
-        self.n_features = n_features
+        # Else
+        # We're gonna split all our values and check their quality later...
+        feats_idx = np.random.choice(n_feats, self.n_features, replace=False)
+        best_feature, best_thresholds = self._best_split(X, y, feats_idx)
+        children_split = self._split(X[:, best_feature], best_thresholds)
+        children = []
 
-    def _split(self, X_column, split_thresh):
-        return np.argwhere(X_column <= split_thresh).flatten(), np.argwhere(X_column > split_thresh).flatten()
+        for i, el in enumerate(children_split):
+            children.append(self._create_path(
+                X[el, :], y[el], current_depth + 1))
+
+        return Node(feature=best_feature, threshold=best_thresholds, children=children)
+
+    def _best_split(self, X, y, feats_idx):
+        best_gain = - 101
+        split_idxs = None
+        split_thresholds = None
+
+        for feat_idx in feats_idx:
+            X_column = X[:, feat_idx]
+            thresholds = np.unique(X_column)
+
+            gain = self._information_gain(y, X_column, thresholds)
+
+            if gain > best_gain:
+                best_gain = gain
+                split_thresholds = thresholds
+                split_idxs = feat_idx
+
+        return split_idxs, split_thresholds
+
+    def _split(self, X_column, thresholds):
+        split_data = []
+        for i, j in enumerate(thresholds):
+            tmp = (np.argwhere(X_column == j).flatten())
+            if len(tmp) > 0:
+                split_data.append(tmp)
+        return split_data.copy()
+
+    def _most_common_label(self, y):
+        if (not len(y)):
+            print("0 length detected returned 0")
+            return 0
+        counter = Counter(y)
+        value = counter.most_common(1)[0][0]
+        return value
+
+    def _information_gain(self, y, X_column, thresholds):
+        # parent entropy
+        parent_entropy = self._entropy(y)
+        n = len(y)
+        n_children = []
+        e_children = []
+        child_entropy = 0
+
+        # create children
+        children = self._split(X_column, thresholds)
+
+        for i, el in enumerate(children):
+            if not len(el):
+                return 0
+            n_children.append(len(el))
+            e_children.append(self._entropy(y[el]))
+
+            child_entropy += n_children[i] / n * e_children[i]
+
+        # calculate the IG
+
+        information_gain = parent_entropy - child_entropy
+        return information_gain
 
     def _entropy(self, y):
         hist = np.bincount(y)
         ps = hist / len(y)
         return -np.sum([p * np.log(p) for p in ps if p > 0])
-
-    def _most_common_label(self, y):
-        counter = Counter(y)
-        value = counter.most_common(1)[0][0]
-        return value
-
-    def _grow_tree(self, X, y, depth=0):
-        n_samples, n_feats = X.shape
-        n_labels = len(np.unique(y))
-
-        # check if we Need to STOP!!!
-        if (depth >= self.max_depth or n_labels == 1 or n_samples < self.min_samples_split):
-            leaf_value = self._most_common_label(y)
-            return Node(value=leaf_value)
-
-        # else:
-        feat_idxs = np.random.choice(n_feats, self.n_features, replace=False)
-        # find the best split
-        best_feature, best_thresh = self._best_split(X, y, feat_idxs)
-        # create child nodes
-        left_idxs, right_idxs = self._split(X[:, best_feature], best_thresh)
-        left = self._grow_tree(X[left_idxs, :], y[left_idxs], depth + 1)
-        right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth + 1)
-        return Node(best_feature, best_thresh, left, right)
-
-    def _best_split(self, X, y, feat_idxs):
-        best_gain = -1
-        split_idx, split_threshold = None, None
-
-        for feat_idx in feat_idxs:
-            X_column = X[:, feat_idx]
-            thresholds = np.unique(X_column)
-
-            for thr in thresholds:
-                gain = self._information_gain(y, X_column, thr)
-
-                if gain - best_gain > 0:
-                    best_gain = gain
-                    split_idx = feat_idx
-                    split_threshold = thr
-
-        return split_idx, split_threshold
-
-    def _information_gain(self, y, X_column, threshold):
-        # parent entropy
-        parent_entropy = self._entropy(y)
-        # create children
-        left_idxs, right_idxs = self._split(X_column, threshold)
-
-        if len(left_idxs) == 0 or len(right_idxs) == 0:
-            return 0
-
-        # calculate the weighted avg. entropy of children
-        n = len(y)
-        n_l, n_r = len(left_idxs), len(right_idxs)
-        e_l, e_r = self._entropy(y[left_idxs]), self._entropy(y[right_idxs])
-        child_entropy = (n_l / n) * e_l + (n_r / n) * e_r
-
-        # calculate the IG
-        information_gain = parent_entropy - child_entropy
-        return information_gain
 
     def fit(self, X, y):
         if(self.n_features):
@@ -607,43 +600,45 @@ class DecisionTree:
         else:
             self.n_features = X.shape[1]
 
-        self.root = self._grow_tree(X, y)
+        self.root = self._create_path(X, y)
 
     def predict(self, X):
         return np.array([self._traverse_tree(x, self.root) for x in X])
 
     def _traverse_tree(self, x, node):
-        if node.check_leaf_node():
+        if node.is_leaf():
             return node.value
 
-        if x[node.feature] <= node.threshold:
-            return self._traverse_tree(x, node.left)
-        return self._traverse_tree(x, node.right)
+        child_node = None
+        for child in node.children:
+            if x[node.feature] == child.feature:
+                child_node = child
+                break
+
+        if child_node:
+            return self._traverse_tree(x, child_node)
+        return self._traverse_tree(x, node.children[0])
 
 
 ```
 
 ### Результаты выполнения
 
-Best f1 is 1.0
 Best depth 400
 Best min split 5
 Confusion matrix:
- [[1. 1. 0. 0. 0. 0. 0. 0.]
- [0. 6. 1. 0. 1. 0. 0. 0.]
- [0. 3. 3. 0. 0. 2. 0. 0.]
- [1. 2. 0. 0. 1. 1. 0. 0.]
- [0. 0. 0. 2. 0. 0. 1. 0.]
- [0. 1. 0. 0. 3. 1. 1. 1.]
- [0. 0. 0. 1. 0. 0. 2. 2.]
- [0. 0. 0. 0. 0. 0. 4. 2.]]
-Accuracy: 0.875
-Precision: 0.5
-Recall: 1.0
-False positive rate: 0.14285714285714285
-Specificity: 0.8571428571428571
-
-[AUC-ROC](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/blob/main/lab6/AUCS/Снимок%20экрана%202023-11-15%20в%2009.08.00.png) and [AUC-PR](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/blob/main/lab6/AUCS/Снимок%20экрана%202023-11-15%20в%2009.08.17.png)
+ [[ 0.  2.  0.  0.  0.  0.  0.  0.]
+ [ 0. 10.  0.  0.  0.  0.  0.  0.]
+ [ 0.  7.  0.  0.  0.  0.  0.  0.]
+ [ 0.  6.  0.  0.  0.  0.  0.  0.]
+ [ 0.  3.  0.  0.  0.  0.  0.  0.]
+ [ 0.  6.  0.  0.  0.  0.  0.  0.]
+ [ 0.  5.  0.  0.  0.  0.  0.  0.]
+ [ 0.  5.  0.  0.  0.  0.  0.  0.]]
+Accuracy: 0.8333333333333334
+Precision: 0.0
+False positive rate: 0.16666666666666666
+Specificity: 0.8333333333333334
 
 ### Примеры использования метода
 
