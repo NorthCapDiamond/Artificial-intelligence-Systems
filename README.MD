@@ -287,80 +287,20 @@ SPRQL:
 ### Псевдокод метода
 
 ```css
-def LinearRegressionScalarCoefficients(X, Y):
-	ones = pd.DataFrame([1]*X.shape[0])
-	X = pd.concat([ones, X], axis=1)
-	array = []
 
+функция нормального уравнения(X, Y):
+    возвращаем np.dot(np.linalg.inv(np.dot(X.T, X)), np.dot(X.T, Y))
 
-	matrix = []
-	for i in X.columns:
-		tmp_array = []
-		for j in X.columns:
-			tmp_array.append((X[i]*X[j]).sum())
-		tmp_array.append((Y[Y.columns[0]]*X[i]).sum())
-		matrix.append(tmp_array)
-	return gauss(matrix)
+функция предсказания(X, норм):
+    возвращаем np.dot(X, норм)
 
-def LinearRegressionScalar(x_train, y_train, x_test, copy=True):
+функция ЛинейнаяРегрессияМатрица(x_train, y_train, x_test):
+    единицы1 = np.ones((длина(X_train), 1))
+    единицы2 = np.ones((длина(X_test), 1))
+    X_train = np.append(единицы1, X_train, ось=1)
+    X_test = np.append(единицы2, X_test, ось=1)
 
-	if copy:
-		X_train = x_train.copy()
-		X_test = x_test.copy()
-		Y_train = y_train.copy()
-	else:
-		X_train = x_train
-		X_test = x_test
-		Y_train = y_train
-
-
-	X_train = MinMaxScaler(X_train)
-	X_test = MinMaxScaler(X_test)
-	answer = []
-	coeffs = LinearRegressionScalarCoefficients(X_train, Y_train)
-
-
-	for i in range(X_test.shape[0]):
-		tmp = 0
-		row = X_test.iloc[i].tolist()
-		row.insert(0, 1)
-		for j in range(len(coeffs)):
-			tmp += row[j]*coeffs[j]
-		answer.append(tmp)
-	return pd.DataFrame(answer).to_numpy()
-
-
-
-
-
-def normal_equation(X, Y):
-	return np.dot( np.linalg.inv(np.dot(X.T, X)), np.dot(X.T, Y))
-
-def predict(X, norm):
-	return np.dot(X, norm)
-
-def LinearRegressionMatrix(x_train, y_train, x_test, copy=True):
-	if copy:
-		X_train = x_train.copy()
-		X_test = x_test.copy()
-		Y_train = y_train.copy()
-	else:
-		X_train = x_train
-		X_test = x_test
-		Y_train = y_train
-
-	X_train = MinMaxScaler(X_train)
-	X_test = MinMaxScaler(X_test)
-	X_train = X_train.to_numpy()
-	X_test = X_test.to_numpy()
-	Y_train = Y_train.to_numpy()
-
-	one1 = np.ones((len(X_train),1))
-	one2 = np.ones((len(X_test),1))
-	X_train = np.append(one1, X_train, axis=1)
-	X_test = np.append(one2, X_test, axis=1)
-
-	return(predict(X_test, normal_equation(X_train, Y_train)))
+    возвращаем предсказать(X_test, нормальноеУравнение(X_train, Y_train))
 
 ```
 
@@ -403,40 +343,38 @@ Time: 0.003862142562866211
 ### Псевдокод метода
 
 ```css
-def minkowski_distance(x, y, n):
-	return np.power((np.sum(abs(x - y)**n)), 1 / n)
+функция манхэттенского расстояния(x, y, n):
+    возвращаем np.power((np.sum(abs(x - y)**n)), 1 / n)
 
 
-class KNNClassifier:
-    def __init__(self, k=3, n=2):
-        if not(k % 2):
-            pred("K must be non odd")
-            exit(0)
+класс KNNКлассификатор:
+    функция __init__(self, k=3, n=2):
+        если не k % 2:
+            вывести("K должно быть нечетным")
+            выход(0)
         self.k = k
         self.n = n
 
-    def fit(self, X, Y):
-        self.X_train = MyMinMaxScaler(X).to_numpy()
-        self.Y_train = Y.to_numpy()
+    функция обучения(self, X, Y):
+        self.X_train = МойМинМаксШкалировщик(X).ПреобразоватьВМассив()
+        self.Y_train = ПреобразоватьВМассив(Y)
 
-    def predict(self, X):
-        X = MyMinMaxScaler(X).to_numpy()
+    функция предсказания(self, X):
+        X = МойМинМаксШкалировщик(X).ПреобразоватьВМассив()
 
-        def inner_pred(x):
-            distances = [minkowski_distance(x, y, self.n)
-                         for y in self.X_train]
+        функция внутреннееПредсказание(x):
+            расстояния = [манхэттенское_расстояние(x, y, self.n) для y in self.X_train]
 
-            k_indexes = np.argsort(distances)[:self.k]
-            k_labels = [self.Y_train[i] for i in k_indexes]
+            k_индексы = np.argsort(расстояния)[:self.k]
+            k_метки = [self.Y_train[i] for i in k_индексы]
 
-            k_labels_tuples = [tuple(row) for row in k_labels]
+            k_метки_кортежи = [кортеж(строка) для строка in k_метки]
 
+            мода = Счетчик(k_метки_кортежи).most_common()
 
-            mode = Counter(k_labels_tuples).most_common()
+            вернуть мода[0][0][0]
 
-            return mode[0][0][0]
-
-        return [inner_pred(x) for x in X]
+        вернуть [внутреннееПредсказание(x) для x in X]
 
 ```
 
@@ -482,142 +420,29 @@ almost everywhere.. but it is too slow
 ### Код метода
 
 ```css
-import numpy as np
-from collections import Counter
 
+функция _создать_путь(self, X, y, текущая_глубина=0):
+    n_выборок, n_признаков = форма(X)
+    n_меток = len(уникальные(y))
 
-class Node:
-    def __init__(self, feature=None, children=None, value=None, typenode=None, threshold=None):
-        self.feature = feature
-        self.threshold = threshold
-        self.children = children
-        self.value = value
-        self.typenode = typenode
+    # Проверка критериев завершения:
+    если (n_выборок < self.min_samples_split или текущая_глубина >= self.max_depth или n_признаков < self.min_features_split или n_меток == 1):
+        значение_листа = self._самая_частая_метка(y)
+        вернуть Узел(значение=значение_листа, типузла="лист")
 
-    def set_leaf(self):
-        self.typenode = "leaf"
+    # Иначе
+    # Мы собираемся разделить все наши значения и проверить их качество позже...
+    индексы_признаков = np.random.choice(n_признаков, self.n_features, заменить=False)
+    лучший_признак, лучшие_пороги = self._лучшее_разделение(X, y, индексы_признаков)
+    разделенные_дети = self._разделить(X[:, лучший_признак], лучшие_пороги)
+    дети = []
 
-    def is_leaf(self):
-        return self.typenode == "leaf"
+    для i, элемент в enumerate(разделенные_дети):
+        дети.append(self._создать_путь(
+            X[элемент, :], y[элемент], текущая_глубина + 1))
 
+    вернуть Узел(признак=лучший_признак, порог=лучшие_пороги, дети=дети)
 
-class DecisionTree:
-    def __init__(self, max_depth=10, min_features_split=1, min_samples_split=10, n_features=None):
-        self.max_depth = max_depth
-        self.min_features_split = min_features_split
-        self.min_samples_split = min_samples_split
-        self.n_features = n_features
-        self.root = None
-
-    def _create_path(self, X, y, current_depth=0):
-        n_samples, n_feats = X.shape
-        n_labels = len(np.unique(y))
-
-        # Checking for ending criteria:
-        if (n_samples < self.min_samples_split or current_depth >= self.max_depth or n_feats < self.min_features_split or n_labels == 1):
-            leaf_value = self._most_common_label(y)
-            return Node(value=leaf_value, typenode="leaf")
-
-        # Else
-        # We're gonna split all our values and check their quality later...
-        feats_idx = np.random.choice(n_feats, self.n_features, replace=False)
-        best_feature, best_thresholds = self._best_split(X, y, feats_idx)
-        children_split = self._split(X[:, best_feature], best_thresholds)
-        children = []
-
-        for i, el in enumerate(children_split):
-            children.append(self._create_path(
-                X[el, :], y[el], current_depth + 1))
-
-        return Node(feature=best_feature, threshold=best_thresholds, children=children)
-
-    def _best_split(self, X, y, feats_idx):
-        best_gain = - 101
-        split_idxs = None
-        split_thresholds = None
-
-        for feat_idx in feats_idx:
-            X_column = X[:, feat_idx]
-            thresholds = np.unique(X_column)
-
-            gain = self._information_gain(y, X_column, thresholds)
-
-            if gain > best_gain:
-                best_gain = gain
-                split_thresholds = thresholds
-                split_idxs = feat_idx
-
-        return split_idxs, split_thresholds
-
-    def _split(self, X_column, thresholds):
-        split_data = []
-        for i, j in enumerate(thresholds):
-            tmp = (np.argwhere(X_column == j).flatten())
-            if len(tmp) > 0:
-                split_data.append(tmp)
-        return split_data.copy()
-
-    def _most_common_label(self, y):
-        if (not len(y)):
-            print("0 length detected returned 0")
-            return 0
-        counter = Counter(y)
-        value = counter.most_common(1)[0][0]
-        return value
-
-    def _information_gain(self, y, X_column, thresholds):
-        # parent entropy
-        parent_entropy = self._entropy(y)
-        n = len(y)
-        n_children = []
-        e_children = []
-        child_entropy = 0
-
-        # create children
-        children = self._split(X_column, thresholds)
-
-        for i, el in enumerate(children):
-            if not len(el):
-                return 0
-            n_children.append(len(el))
-            e_children.append(self._entropy(y[el]))
-
-            child_entropy += n_children[i] / n * e_children[i]
-
-        # calculate the IG
-
-        information_gain = parent_entropy - child_entropy
-        return information_gain
-
-    def _entropy(self, y):
-        hist = np.bincount(y)
-        ps = hist / len(y)
-        return -np.sum([p * np.log(p) for p in ps if p > 0])
-
-    def fit(self, X, y):
-        if(self.n_features):
-            self.n_features = min(X.shape[1], self.n_features)
-        else:
-            self.n_features = X.shape[1]
-
-        self.root = self._create_path(X, y)
-
-    def predict(self, X):
-        return np.array([self._traverse_tree(x, self.root) for x in X])
-
-    def _traverse_tree(self, x, node):
-        if node.is_leaf():
-            return node.value
-
-        child_node = None
-        for child in node.children:
-            if x[node.feature] == child.feature:
-                child_node = child
-                break
-
-        if child_node:
-            return self._traverse_tree(x, child_node)
-        return self._traverse_tree(x, node.children[0])
 
 
 ```
@@ -685,41 +510,36 @@ Specificity: 0.8333333333333334
 ### Псевдокод метода
 
 ```css
-import numpy as np
-import pandas as pd
 
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+функция сигмоиды(x):
+    вернуть 1 / (1 + np.exp(-x))
 
 
-class LogisticRegression():
-    def __init__(self, n_iter=1000, l_rate=0.001):
-        self.n_iter = n_iter
-        self.l_rate = l_rate
-        self.weights = None
-        self.bias = None
+класс ЛогистическаяРегрессия:
 
-    def fit(self, X, y):
-        N, features = X.shape
-        self.weights = np.zeros(features)
+    функция обучения(self, X, y):
+        N, признаки = форма(X)
+        self.weights = нули(признаки)
         self.bias = 0
 
-        for i in range(self.n_iter):
-            linear_predictions = np.dot(X, self.weights) + self.bias
-            predictions = sigmoid(linear_predictions)
-            dw = (1 / N) * 2 * np.dot(X.T, predictions - y)
-            db = (1 / N) * 2 * sum(predictions - y)
+        для i в диапазоне(self.n_iter):
+            линейные_предсказания = np.dot(X, self.weights) + self.bias
+            предсказания = сигмоида(линейные_предсказания)
+            dw = (1 / N) * 2 * np.dot(X.T, предсказания - y)
+            db = (1 / N) * 2 * сумма(предсказания - y)
 
             self.weights = self.weights - self.l_rate * dw
             self.bias = self.bias - self.l_rate * db
 
-    def predict(self, X, percentile=0.5):
-        linear_predictions = np.dot(X, self.weights) + self.bias
-        y_predicted = sigmoid(linear_predictions)
+    функция предсказания(self, X, процентиль=0.5):
+        линейные_предсказания = np.dot(X, self.weights) + self.bias
+        y_предсказанные = сигмоида(линейные_предсказания)
 
-        predict_class = [1 if y > percentile else 0 for y in y_predicted]
-        return predict_class
+        предсказать_класс = [1 если y > процентиль иначе 0 для y in y_предсказанные]
+        вернуть предсказать_класс
+
+
 
 
 ```
