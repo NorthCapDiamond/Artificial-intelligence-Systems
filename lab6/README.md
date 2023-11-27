@@ -10,173 +10,167 @@
 
 ### Описание метода
 
-Дерево решений — метод представления решающих правил в определенной иерархии, включающей в себя элементы двух типов — узлов (node) и листьев (leaf). Узлы включают в себя решающие правила и производят проверку примеров на соответствие выбранного атрибута обучающего множества.Oct 12, 2020
+Дерево решений — метод представления решающих правил в определенной иерархии, включающей в себя элементы двух типов — узлов (node) и листьев (leaf). Узлы включают в себя решающие правила и производят проверку примеров на соответствие выбранного атрибута обучающего множества.
 
 ### Псевдокод метода
 
 ```css
+import pandas as pd 
 import numpy as np
-from collections import Counter
+from DecisionTree import DecisionTree
+import random
 
 
-class Node:
-    def __init__(self, feature=None, threshold=None, left=None, right=None, value=None):
-        self.feature = feature
-        self.threshold = threshold
-        self.left = left
-        self.right = right
-        self.value = value
-
-    def check_leaf_node(self):
-        return self.value is not None
-
-    def check_not_leaf_node(self):
-        return self.value is None
-
-    def set_feature(self, feature):
-        self.feature = feature
-
-    def set_threshold(self, threshold):
-        self.threshold = threshold
-
-    def set_left_node(self, left_ptr):
-        self.left = left_ptr
-
-    def set_right_node(self, right_ptr):
-        self.right = right_ptr
-
-    def set_value(self, value):
-        self.value = value
+def MyMinMaxScaler(A):
+    for i in A.columns:
+        maxi = A[i].max()
+        mini = A[i].min()
+        A[i] = (A[i] - mini) / (maxi - mini)
+    return A
 
 
-class DecisionTree:
-    def __init__(self, min_samples_split=2, max_depth=100, n_features=None):
-        self.min_samples_split = min_samples_split
-        self.max_depth = max_depth
-        self.n_features = n_features
-        self.root = None
+def my_train_test_split(X, Y, test_size=0.3):
+    X_columns = X.columns
+    Y_columns = Y.columns
+    X = X.to_numpy()
+    Y = Y.to_numpy()
+    idxes = np.array(range(len(X)))
 
-    def set_min_samples(self, min_samples_split):
-        self.min_samples_split = min_samples_split
+    test_size = round(test_size * len(X))
 
-    def set_max_depth(self, max_depth):
-        self.max_depth = max_depth
+    random.shuffle(idxes)
 
-    def set_n_features(self, n_features):
-        self.n_features = n_features
+    train_idx = idxes[test_size:len(X)]
+    test_idx = idxes[0:test_size]
 
-    def _split(self, X_column, split_thresh):
-        return np.argwhere(X_column <= split_thresh).flatten(), np.argwhere(X_column > split_thresh).flatten()
+    return(pd.DataFrame(X[train_idx, :], columns=X_columns), pd.DataFrame(X[test_idx, :], columns=X_columns), pd.DataFrame(Y[train_idx, :], columns=Y_columns), pd.DataFrame(Y[test_idx, :], columns=Y_columns))
 
-    def _entropy(self, y):
-        hist = np.bincount(y)
-        ps = hist / len(y)
-        return -np.sum([p * np.log(p) for p in ps if p > 0])
 
-    def _most_common_label(self, y):
-        counter = Counter(y)
-        value = counter.most_common(1)[0][0]
-        return value
+def my_f1_score(y_test, pred):
+    #Classes = [TP, FP, TN, FN]
+    y_test = np.array(y_test).flatten()
+    pred = np.array(pred)
+    TP = 0
+    FP = 0
+    TN = 0
+    FN = 0
 
-    def _grow_tree(self, X, y, depth=0):
-        n_samples, n_feats = X.shape
-        n_labels = len(np.unique(y))
 
-        # check if we Need to STOP!!!
-        if (depth >= self.max_depth or n_labels == 1 or n_samples < self.min_samples_split):
-            leaf_value = self._most_common_label(y)
-            return Node(value=leaf_value)
+    classes = list(set(y_test.tolist()))
+    classes_stats = [[0, 0, 0, 0]]*len(classes)
+    for i, cur_class in enumerate(classes):
+        for idx, (el1, el2) in enumerate(zip(y_test, pred)):
+            if (el1==el2==cur_class):
+                TP+=1
+                classes_stats[i][0]+=1
+            if (el2==cur_class and el1!=el2):
+                FP+=1
+                classes_stats[i][1]+=1
+            if (el1==el2 and el1!=cur_class):
+                classes_stats[i][2]+=1
+                TN+=1
+            if (el1!=el2 and el1!=cur_class):
+                classes_stats[i][3]+=1
+                FN+=1
 
-        # else:
-        feat_idxs = np.random.choice(n_feats, self.n_features, replace=False)
-        # find the best split
-        best_feature, best_thresh = self._best_split(X, y, feat_idxs)
-        # create child nodes
-        left_idxs, right_idxs = self._split(X[:, best_feature], best_thresh)
-        left = self._grow_tree(X[left_idxs, :], y[left_idxs], depth + 1)
-        right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth + 1)
-        return Node(best_feature, best_thresh, left, right)
+    return TP/(TP + (1/(len(classes))) * (FP + FN))
 
-    def _best_split(self, X, y, feat_idxs):
-        best_gain = -1
-        split_idx, split_threshold = None, None
 
-        for feat_idx in feat_idxs:
-            X_column = X[:, feat_idx]
-            thresholds = np.unique(X_column)
+def my_confusion_matrix(y_test, pred):
+    #Classes = [TP, FP, TN, FN]
+    y_test = np.array(y_test).flatten()
+    pred = np.array(pred)
 
-            for thr in thresholds:
-                gain = self._information_gain(y, X_column, thr)
+    classes = list(set(y_test.tolist()))
+    num_classes = len(classes)
+    confusion_matrix = np.zeros((num_classes, num_classes))
+    for true_label, predicted_label in zip(y_test, pred):
+        true_label_index = classes.index(true_label)
+        predicted_label_index = classes.index(predicted_label)
+        confusion_matrix[true_label_index][predicted_label_index] += 1
 
-                if gain - best_gain > 0:
-                    best_gain = gain
-                    split_idx = feat_idx
-                    split_threshold = thr
+    return confusion_matrix
 
-        return split_idx, split_threshold
 
-    def _information_gain(self, y, X_column, threshold):
-        # parent entropy
-        parent_entropy = self._entropy(y)
-        # create children
-        left_idxs, right_idxs = self._split(X_column, threshold)
+def kfold_dtree(X, Y, label, max_depth, min_samples_split):
+    df = pd.concat([X.copy(),Y.copy()], axis=1)
+    df = df.rename(columns={label: "Label"}) 
+    df = df.reindex(np.random.permutation(df.index)) 
+    df = df.reset_index(drop=True)
 
-        if len(left_idxs) == 0 or len(right_idxs) == 0:
-            return 0
 
-        # calculate the weighted avg. entropy of children
-        n = len(y)
-        n_l, n_r = len(left_idxs), len(right_idxs)
-        e_l, e_r = self._entropy(y[left_idxs]), self._entropy(y[right_idxs])
-        child_entropy = (n_l / n) * e_l + (n_r / n) * e_r
+    size_of_fold = X.shape[0]//10
+    folds = []
+    tmp = 0
+    for i in range(10):
+        folds.append(pd.DataFrame(df.iloc[tmp:(tmp+size_of_fold)]))
+        tmp += size_of_fold
 
-        # calculate the IG
-        information_gain = parent_entropy - child_entropy
-        return information_gain
 
-    def fit(self, X, y):
-        if(self.n_features):
-            self.n_features = min(X.shape[1], self.n_features)
-        else:
-            self.n_features = X.shape[1]
 
-        self.root = self._grow_tree(X, y)
+    train = []
+    test = [] 
+    for i in range(len(folds)):
+        tmp1 = []
+        tmp2 = []
+        for j in range(len(folds)):
+            if i==j:
+                tmp2.append(folds[i])
+            else:
+                if(len(tmp1)>0):
+                    tmp1[0] = pd.concat([tmp1[0], folds[i]])
+                else:
+                    tmp1.append(folds[i])
 
-    def predict(self, X):
-        return np.array([self._traverse_tree(x, self.root) for x in X])
+        train.append(tmp1)
+        test.append(tmp2)
+    
 
-    def _traverse_tree(self, x, node):
-        if node.check_leaf_node():
-            return node.value
+    best_n = -1
+    best_l_rate = -1
+    best_f1 = 0
+    curr_f1 = 0
 
-        if x[node.feature] <= node.threshold:
-            return self._traverse_tree(x, node.left)
-        return self._traverse_tree(x, node.right)
 
+    for n in max_depth:
+        for k in min_samples_split:
+            curr_f1 = 0
+            for i, val in enumerate(train):
+                X_train, y_train, X_test, y_test = train[i][0].drop(["Label"], axis=1), train[i][0][["Label"]], test[i][0].drop(["Label"], axis=1), test[i][0][["Label"]]
+                model = DecisionTree(max_depth=n, min_samples_split=k)
+                model.fit(X_train.to_numpy(), y_train.to_numpy().flatten())
+                curr_f1 += my_f1_score(pd.DataFrame(y_test), model.predict(X_test.to_numpy()))
+            if(curr_f1/len(train) >= best_f1):
+                best_n = n 
+                best_l_rate = k
+                best_f1 = curr_f1/len(train)
+
+
+    print("Best depth", best_n)
+    print("Best min split", best_l_rate)
+    return [best_n, best_l_rate]
 
 ```
 
 ### Результаты выполнения
 
-Best f1 is 1.0
 Best depth 400
 Best min split 5
 Confusion matrix:
- [[1. 1. 0. 0. 0. 0. 0. 0.]
- [0. 6. 1. 0. 1. 0. 0. 0.]
- [0. 3. 3. 0. 0. 2. 0. 0.]
- [1. 2. 0. 0. 1. 1. 0. 0.]
- [0. 0. 0. 2. 0. 0. 1. 0.]
- [0. 1. 0. 0. 3. 1. 1. 1.]
- [0. 0. 0. 1. 0. 0. 2. 2.]
- [0. 0. 0. 0. 0. 0. 4. 2.]]
-Accuracy: 0.875
-Precision: 0.5
-Recall: 1.0
-False positive rate: 0.14285714285714285
-Specificity: 0.8571428571428571
+ [[ 0.  2.  0.  0.  0.  0.  0.  0.]
+ [ 0. 10.  0.  0.  0.  0.  0.  0.]
+ [ 0.  7.  0.  0.  0.  0.  0.  0.]
+ [ 0.  6.  0.  0.  0.  0.  0.  0.]
+ [ 0.  3.  0.  0.  0.  0.  0.  0.]
+ [ 0.  6.  0.  0.  0.  0.  0.  0.]
+ [ 0.  5.  0.  0.  0.  0.  0.  0.]
+ [ 0.  5.  0.  0.  0.  0.  0.  0.]]
+Accuracy: 0.8333333333333334
+Precision: 0.0
+False positive rate: 0.16666666666666666
+Specificity: 0.8333333333333334
 
-[AUC-ROC](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/blob/main/lab6/AUCS/Снимок%20экрана%202023-11-15%20в%2009.08.00.png) and [AUC-PR](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/blob/main/lab6/AUCS/Снимок%20экрана%202023-11-15%20в%2009.08.17.png)
+[AUC-ROC](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/blob/main/lab6/AUCS/Снимок%20экрана%202023-11-27%20в%2014.47.34.png) and [AUC-PR](https://github.com/NorthCapDiamond/Artificial-intelligence-Systems/blob/main/lab6/AUCS/Снимок%20экрана%202023-11-27%20в%2014.48.01.png)
 
 ### Примеры использования метода
 
